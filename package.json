@@ -1,0 +1,51 @@
+{
+  "name": "grunt-dependency-resolver",
+  "description": "Automatically resolve your javascript dependencies.",
+  "version": "1.0.0",
+  "homepage": "",
+  "author": {
+    "name": "Zynga",
+    "email": "studio5@zynga.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/zynga/grunt-dependency-resolver.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zynga/grunt-dependency-resolver/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "Gruntfile.js",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "dependencies": {
+    "adm-zip": "*",
+    "esprima": "*",
+    "escope": "*",
+    "colors": "*",
+    "wrench": "*",
+    "groundskeeper": "*",
+    "execSync": "*",
+    "http-sync": "*",
+    "extend": "*"
+  },
+ "devDependencies": {
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt": "~0.4.1"
+  },  
+  "peerDependencies": {
+    "grunt": "~0.4.1"
+  },
+  "keywords": [
+    "gruntplugin"
+  ]
+}

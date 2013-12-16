@@ -1,4 +1,3 @@
-grunt-dependency-resolver
-=========================
+# grunt-dependency-resolver
 
-Automatic dependency resolution for your JavaScript/Grunt projects.
+> A Node Based Task to Automatically Resolve Javascript Dependencies in a Project

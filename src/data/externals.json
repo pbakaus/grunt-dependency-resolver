@@ -1,0 +1,26 @@
+{
+
+	"jquery": {
+		"src":  "http://code.jquery.com/jquery-2.0.3.min.js",
+		"mappings": {
+			"$": "jquery-2.0.3.min",
+			"jQuery": "jquery-2.0.3.min"
+		}
+	},
+
+	"Scroller": {
+		"src":  "https://github.com/zynga/scroller.git",
+		"mappings": {
+			"Scroller": "src/Scroller"
+		}
+	},
+
+	"core": {
+		"src":  "https://github.com/zynga/core.git",
+		"mappings": {
+			"core": "src/core",
+			"jasy": "src/jasy"
+		}
+	}
+
+}

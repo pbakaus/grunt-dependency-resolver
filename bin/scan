@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+
+var scanner = require('../src/ScopeScanner');
+var file = process.argv[2];
+var scan = scanner.scan(file);
+
+var header = "Variables not declared in " + file + ':';
+var border = Array(header.length).join('-');
+console.log('\n' + header);
+console.log(border);
+
+scan.forEach(function(v) {
+	console.log('- ' + v);
+});
+
+console.log(border + '\n');

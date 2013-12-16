@@ -1,0 +1,14 @@
+{
+
+	"**//ajax.googleapis.com/ajax/libs/angularjs/*/angular.min.js": ["angular"],
+
+	"**//ajax.googleapis.com/ajax/libs/dojo/*/dojo/dojo.js": ["dojo", "dijit", "dojox"],
+
+	"**//ajax.googleapis.com/ajax/libs/ext-core/*/ext-core.js": ["Ext"],
+
+	"**//ajax.googleapis.com/ajax/libs/jquery/*/jquery.min.js": ["jQuery", "$"],
+
+	"**//code.jquery.com/jquery-*.min.js": ["jQuery", "$"],
+	"**//ajax.aspnetcdn.com/ajax/jquery/jquery-*.js": ["jQuery", "$"]
+
+}
