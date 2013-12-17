@@ -50,4 +50,4 @@ resolveDependencies: {
 }
 ```
 
-This example reads the index.source.html, which contains a reference to js/main.js. main.js requires jQuery and js/foo.js. Our output will be in this order: ['js/foo.js','PATH/TO/JQUERY/jQuery.js','js/main.js'].
+This example reads the index.source.html, which contains a reference to js/main.js. js/main.js requires jQuery and js/foo.js. Our output will be in this order: ['js/foo.js','PATH/TO/JQUERY/jQuery.js','js/main.js'].
