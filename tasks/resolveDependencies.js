@@ -150,6 +150,7 @@ module.exports = function(grunt) {
 			}
 
 			var sources = fileSources.shift();
+			var counter = sources.length;
 
 			// run resolver for every found file
 			sources.forEach(function(source) {
@@ -173,10 +174,12 @@ module.exports = function(grunt) {
 						fs.writeFileSync(source[1], cleaner.toString(), 'utf8');						
 					}
 
-					if(fileSources.length) {
-						runResolver();
-					} else {
-						done();
+					if(!--counter) {
+						if(fileSources.length) {
+							runResolver();
+						} else {
+							done();
+						}
 					}
 
 				});
