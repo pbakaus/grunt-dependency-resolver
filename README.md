@@ -123,6 +123,8 @@ This example is a fun one. We may not want the most up-to-date cards.js, so we m
 
 ### Usage Example
 
+See: ./samples
+
 ```js
  // never include JS files manually again. Yes, really.
 resolveDependencies: {
