@@ -86,6 +86,8 @@ Default value: `{}`
 > This is the magical mappings object. We by default provide mappings to: jQuery, Zynga Scroller, and Zynga Core.
 
 ##### Mappings Examples
+
+#### $ / jQuery
 ```json
 "jquery": {
 	"src":  "http://code.jquery.com/jquery-2.0.3.min.js",
@@ -97,6 +99,8 @@ Default value: `{}`
 ```
 If your javascript code has an unresolved declaration of $ or jQuery, the Dependency Resolver will load jQuery-2.0.3.min.js into your Externals directory, and map the file into the output in the correct load order.
 
+
+#### Scroller
 ```json
 "Scroller": {
 	"src":  "https://github.com/zynga/scroller.git",
@@ -108,13 +112,14 @@ If your javascript code has an unresolved declaration of $ or jQuery, the Depend
 ```
 This example checks out the Github Repo for Zynga Scroller on the Master branch and places it into your Externals directory. It then maps Scroller to the path where Scroller.js lives in Zynga Scroller (src/Scroller).
 
+#### Cards (http://cards.kik.com/docs/basic/)
 ```json
 "cards": {
 	"mappings": { "cards": "cards"},
 	"ignoreUnmapped": true
 }
 ```
-This example is a fun one. We don't want the most up-to-date cards.js, so we manually update it on occasion. This means we check in cards/card.js to our Externals directory and the Dependency Resolver just uses it.
+This example is a fun one. We may not want the most up-to-date cards.js, so we manually update it on occasion. This means we check in cards/card.js to our Externals directory and the Dependency Resolver just uses it.
 
 ### Usage Example
 
