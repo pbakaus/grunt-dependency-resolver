@@ -7,7 +7,7 @@
 ## resolveDependencies
 
 This task takes a Source Directory, an Externals Directory, a Namespace, and a collection of Files.
-It will attempt to find Javascript files embedded in the HTML, and then begins it's magic.
+It will attempt to find Javascript files embedded in the HTML, and then begins it's magic. Big nod to Esprima (http://esprima.org/)
 It will scan this file and discover all unresolved declarations, finds files that map to these declarations, and generate out a Dependency tree to be loaded in sequence or inlined in order.
 
 Simple Example:
