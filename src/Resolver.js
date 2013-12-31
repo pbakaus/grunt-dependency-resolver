@@ -569,11 +569,12 @@ module.exports.resolve = function(src, dest, initiator, skip, skipLoader, option
 		});
 
 		// construct list of sub namespaces
-		var subNamespaces = [];
+		var subNamespaces = [], uniqueCheck = {};
 		assignedArray.forEach(function(fileName) {
 			var sub = path.relative(options.source, path.dirname(fileName));
-			if(sub) {
+			if(sub && sub.substr(0,2) !== '..' && !uniqueCheck[sub]) {
 				subNamespaces.push(sub);
+				uniqueCheck[sub] = 1;
 			}
 		});
 
