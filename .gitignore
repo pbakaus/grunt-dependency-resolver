@@ -4,5 +4,9 @@ npm-debug.log
 tmp
 *.linked.js
 *.built.js
+*.concatenated.js
 samples/basic/index.html
+samples/intermediate/index.html
+samples/intermediate/index.built.html
 external
+build

@@ -30,7 +30,7 @@ module.exports = function(grunt) {
 
 			// declarationMatcher specific options
 			prescan: {
-				match: /core\.(Class|Module)\([\"\']([^\"\']+)/g,
+				match: null,
 				directories: []
 			},
 
@@ -59,7 +59,8 @@ module.exports = function(grunt) {
 			},
 
 			build: {
-				enabled: false
+				enabled: false,
+				groundskeeper: false
 			},
 
 			output: function(fileName) {
@@ -68,34 +69,53 @@ module.exports = function(grunt) {
 
 			relativeTo: '',
 			namespace: false,
-			source: 'js'
+			substitutionMap: false /* put a path in here otherwise */
 
 		});
-
-		// namespace is a short cut for defining a local mapping
-		// in the externals
-		if(options.namespace) {
-			options.externals.map = options.externals.map || {};
-			var mapping = {};
-			mapping[options.namespace] = options.source;
-			grunt.util._.extend(options.externals.map, {
-				__defaultNamespace: {
-					mappings: mapping,
-					local: true
-				}
-			});
-		}
-
-		// extend folder list for declarationMatcher
-		if(options.prescan) {
-			options.prescan.directories = grunt.util._.union(options.prescan.directories || [], [options.externals.output, options.source]);
-		}
 
 		var files = this.files;
 		var ignoreThese = [];
 		var loaderDone = false;
 		var fileSources = [];
 		var substitutionMap = {};
+
+		function determineSourceDestination() {
+
+			var shortest = 'woooohooooooiamdefinitelynottheshortestpath';
+
+			fileSources.forEach(function(templateFiles) {
+				templateFiles.forEach(function(filePair) {
+					var candidate = path.join(options.relativeTo, path.dirname(filePair[1]));
+					if(candidate.length < shortest.length) {
+						shortest = candidate;
+					}
+				});
+			});
+
+			if(!options.source) {
+				options.source = shortest;
+			}
+
+			// namespace is a short cut for defining a local mapping
+			// in the externals
+			if(options.namespace) {
+				options.externals.map = options.externals.map || {};
+				var mapping = {};
+				mapping[options.namespace] = options.source;
+				grunt.util._.extend(options.externals.map, {
+					__defaultNamespace: {
+						mappings: mapping,
+						local: true
+					}
+				});
+			}
+
+			// extend folder list for declarationMatcher
+			if(options.prescan) {
+				options.prescan.directories = grunt.util._.union(options.prescan.directories || [], [options.externals.output, options.source]);
+			}
+
+		}
 
 		function replaceScriptUrls(html, fn) {
 
@@ -165,7 +185,7 @@ module.exports = function(grunt) {
 					ignoreThese = ignoreThese.concat(resolved);
 					loaderDone = true;
 
-					if(options.build.enabled) {
+					if(options.build.enabled && options.build.groundskeeper) {
 						// strip out stuff, but only if we're in build mode
 						var cleaner = groundskeeper(options.build.groundskeeper);
 						var file = fs.readFileSync(source[1], 'utf8');
@@ -188,7 +208,7 @@ module.exports = function(grunt) {
 
 		};
 
-		function process() {
+		function processFiles() {
 
 			// remove the working file from array
 			var file = files.shift();
@@ -237,14 +257,18 @@ module.exports = function(grunt) {
 			}
 
 			if(files.length) {
-				process();
+				processFiles();
 			} else {
+
+				// determine source path based on LCM on files
+				determineSourceDestination();
+
 				runResolver();
 			}
 
 		}
 
-		process();
+		processFiles();
 
 	});
 

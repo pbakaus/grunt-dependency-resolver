@@ -12,6 +12,7 @@
 var fs = require('fs'),
 	path = require('path'),
 	scopeScanner = require('./ScopeScanner'),
+	prescanExpressions = require('./data/prescan.js'),
 	externalUpdated = {};
 
 var __externals = require('./data/externals.json'), __externalsMerged = false;
@@ -162,7 +163,7 @@ function actuallyExists(fileName) {
 
 }
 
-function writeLoader(loader, required, assigned, dest, initiator, build, relativeTo, namespace) {
+function writeLoader(loader, required, assigned, dest, initiator, build, relativeTo, namespace, subNamespaces) {
 
 	var time = Date.now();
 
@@ -182,7 +183,13 @@ function writeLoader(loader, required, assigned, dest, initiator, build, relativ
 
 	// we definitely need our top namespace created, so make sure it is.
 	// Coincidentally, we can't let the user create it in pure JS :/
-	output += '(function(global) { if(!global.' + namespace + ') global.' + namespace + ' = {}; })(this);\n';
+	output += '(function(global) {'
+	output += 'if(!global.' + namespace + ') global.' + namespace + ' = {};'
+	subNamespaces.forEach(function(subspace) {
+		subspace = namespace + '.' + subspace.replace('/', '.');
+		output += 'if(!global.' + subspace + ') global.' + subspace + ' = {};'
+	});
+	output += '})(this);\n';
 
 	// if we're not in build, we need to relativize the pathes
 	// to the files in terms of where the final loader is loaded
@@ -228,6 +235,10 @@ function findDeclarations(prescan, callback) {
 
 	var findStart = Date.now();
 	var declarations = {};
+
+	if(prescan.match) {
+		prescanExpressions.__extra = prescan.match;
+	}
 
 	function getExtension(filename) {
 		var ext = path.extname(filename || '').split('.');
@@ -288,11 +299,15 @@ function findDeclarations(prescan, callback) {
 						return;
 					}
 
-					var pattern = new RegExp(prescan.match),
-						match;
+					for(var lib in prescanExpressions) {
 
-					while (match = pattern.exec(file)) {
-						declarations[match[2]] = fileName;
+						var pattern = new RegExp(prescanExpressions[lib]),
+							match;
+
+						while (match = pattern.exec(file)) {
+							declarations[match[2]] = fileName;
+						}
+
 					}
 
 				});
@@ -553,8 +568,17 @@ module.exports.resolve = function(src, dest, initiator, skip, skipLoader, option
 			grunt.log.writeln('\t- ' + r.cyan);
 		});
 
+		// construct list of sub namespaces
+		var subNamespaces = [];
+		assignedArray.forEach(function(fileName) {
+			var sub = path.relative(options.source, path.dirname(fileName));
+			if(sub) {
+				subNamespaces.push(sub);
+			}
+		});
+
 		// write the actual JS build/loader file
-		var writeResult = writeLoader(options.loader, required, assigned, dest, initiator, options.build.enabled, options.relativeTo, options.namespace);
+		var writeResult = writeLoader(options.loader, required, assigned, dest, initiator, options.build.enabled, options.relativeTo, options.namespace, subNamespaces);
 
 		// we scan all concatenated files at once for any leftovers,
 		// then substract ignored mappings and the ones that are resolved.
