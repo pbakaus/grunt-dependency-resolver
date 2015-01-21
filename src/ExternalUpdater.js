@@ -18,7 +18,6 @@ var AdmZip = require('adm-zip');
 var path = require('path');
 var colors = require('colors');
 var sh = require('execSync');
-var httpSync = require('http-sync');
 
 var logLevel = 0;
 var _log = function (str, level) {
@@ -33,51 +32,21 @@ function getExtension(filename) {
 function downloadZip(uri, dest, name, externalFolder) {
 	grunt.log.write('\t- ' + name.yellow + ' (zip): ' + uri.bold);
 
-	var parsed = urlParse.parse(uri);
-	var protocol = parsed.protocol.substr(0, parsed.protocol.length-1);
-	var req = httpSync.request({
-		method: 'GET',
-		headers: {
-			"User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.97 Safari/537.11",
-			"Referer": "http://www.zynga.com",
-			"Accept-Encoding": "gzip,deflate,sdch",
-			"encoding": "null",
-			"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-			"Cookie": "cookie"
-		},
-
-		protocol: protocol,
-		host: parsed.host,
-		port: parsed.port || (protocol === 'https' ? '443' : '80'), //443 if protocol = https
-		path: parsed.path
-	});
-
-	var response = req.end();
-
-	if(response.statusCode !== 200) {
-		grunt.log.error('Error! Resource came back with the wrong response code: ', response);
-	} else {
-		grunt.log.write(' => ' + ('downloaded ' + response.body.length + ' bytes').green);
-	}
-
 	var tempFileName = '.s5grunt/' + name;
 
-	// exit here if the resource has the same size as the cached one
-	if(fs.existsSync(tempFileName) && fs.statSync(tempFileName).size === response.body.length) {
-		grunt.log.writeln(', resource unchanged'.yellow);
-		return;
+	var res = sh.exec('wget -O ' + tempFileName + ' ' + uri);
+	if(res.statusCode !== 0) {
+		grunt.log.error('Error! Download ' + uri + "Failed", res.stdout);
+	} else {
+		grunt.log.write(' => ' + ('Downloaded to ' + tempFileName).green);
 	}
 
-	// write zip file to tmp location
-	fs.writeFileSync(tempFileName, response.body);
-
 	var zip = new AdmZip(tempFileName),
-	zipEntries = zip.getEntries();
+		zipEntries = zip.getEntries();
 	var zipDest = path.join(externalFolder, dest);
 	zip.extractAllTo(zipDest, true);
 
 	grunt.log.writeln((', extracted to ' + zipDest).green);
-
 };
 
 function downloadScript(uri, dest, name, externalFolder) {
@@ -90,31 +59,12 @@ function downloadScript(uri, dest, name, externalFolder) {
 		fs.mkdirSync(destination);
 	}
 
-	var parsed = urlParse.parse(uri);
-	var protocol = parsed.protocol.substr(0, parsed.protocol.length-1);
-
-	var req = httpSync.request({
-		method: 'GET',
-		protocol: protocol,
-		host: parsed.host,
-		port: parsed.port || (protocol === 'https' ? '443' : '80'), //443 if protocol = https
-		path: parsed.path
-	});
-	var response = req.end();
-
-	if(response.statusCode !== 200) {
-		grunt.log.error('wrong http status code! ', response);
+	var res = sh.exec('wget -O ' + destination + name + ' ' + uri);
+	if (res.code !== 0) {
+		grunt.log.error('Error! Download ' + uri + "Failed");
+	} else {
+		grunt.log.writeln(' => ' + ('Downloaded to ' + destination + name).green);
 	}
-
-	// exit here if the resource has the same size as the cached one
-	if(fs.existsSync(destination + name) && fs.statSync(destination + name).size === response.body.length) {
-		grunt.log.writeln(' => ' + 'no changes detected'.yellow);
-		return;
-	}
-
-	fs.writeFileSync(destination + name, response.body);
-	grunt.log.writeln(' => ' + ('downloaded ' + response.body.length + ' bytes to ' + destination).green);
-
 };
 
 function _updateGitRepo(branch, uri, dest, name, externalFolder, silent) {
