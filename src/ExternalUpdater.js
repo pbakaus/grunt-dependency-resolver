@@ -36,7 +36,7 @@ function downloadZip(uri, dest, name, externalFolder) {
 
 	var res = sh.exec('wget -O ' + tempFileName + ' ' + uri);
 	if(res.statusCode !== 0) {
-		grunt.log.error('Error! Download ' + uri + "Failed", res.stdout);
+		grunt.fail.warn('Error! Download ' + uri + "Failed", res.stdout);
 	} else {
 		grunt.log.write(' => ' + ('Downloaded to ' + tempFileName).green);
 	}
