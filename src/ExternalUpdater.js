@@ -36,7 +36,7 @@ function downloadZip(uri, dest, name, externalFolder) {
 
 	var res = sh.exec('wget -O ' + tempFileName + ' ' + uri);
 	if(res.statusCode !== 0) {
-		grunt.fail.warn('Error! Download ' + uri + "Failed", res.stdout);
+		grunt.log.error('Error! Download ' + uri + "Failed", res.stdout);
 	} else {
 		grunt.log.write(' => ' + ('Downloaded to ' + tempFileName).green);
 	}
@@ -67,33 +67,19 @@ function downloadScript(uri, dest, name, externalFolder) {
 	}
 };
 
-function checkoutSuccess(stdout) {
-	if (stdout && stdout.indexOf("error") === -1) {
-		return true;
-	}
-	return false;
-}
-
-function hasUpdates(stdout) {
-	if (stdout && stdout.indexOf("Already on") > -1) {
-		return false;
-	}
-	return true;
-}
-
 function _updateGitRepo(branch, uri, dest, name, externalFolder, silent) {
 	
-	var arg = 'git fetch && git checkout ' + branch;
+	var arg = 'git pull origin ' + branch;
 	var tmp = '.s5grunt/' + dest;
 	var destination = path.join(externalFolder, dest) + '/';
 
 	var stdout = sh.exec(arg);
-	var status = stdout.stdout;
+	var status = stdout.stdout.split('\n')[2];
 
 	if(!silent)
-		grunt.log.writeln(' => ' + (checkoutSuccess(status) ? status.green : status.yellow));
+		grunt.log.writeln(' => ' + (status.indexOf('Already up') > -1 ? status.yellow : status.green));
 
-	if(silent || hasUpdates(status)) {
+	if(silent || status.indexOf('Already up') === -1) {
 
 		process.chdir('../../');
 
