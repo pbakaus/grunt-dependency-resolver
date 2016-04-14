@@ -60,7 +60,7 @@ function downloadScript(uri, dest, name, externalFolder) {
 	}
 
 	var res = syncExec('wget -O ' + destination + name + ' ' + uri);
-	if (res.code !== 0) {
+	if (res.stderr.length > 0) {
 		grunt.log.error('Error! Download ' + uri + "Failed");
 	} else {
 		grunt.log.writeln(' => ' + ('Downloaded to ' + destination + name).green);
