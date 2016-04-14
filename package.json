@@ -29,18 +29,18 @@
   },
   "dependencies": {
     "adm-zip": "*",
-    "esprima": "*",
-    "escope": "*",
     "colors": "*",
-    "wrench": "*",
+    "escope": "*",
+    "esprima": "*",
+    "extend": "*",
     "groundskeeper": "*",
-    "execSync": "*",
-    "extend": "*"
+    "sync-exec": "^0.6.2",
+    "wrench": "*"
   },
- "devDependencies": {
+  "devDependencies": {
     "grunt-contrib-clean": "~0.5.0",
     "grunt": "~0.4.1"
-  },  
+  },
   "peerDependencies": {
     "grunt": "~0.4.1"
   },

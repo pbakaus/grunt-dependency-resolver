@@ -17,7 +17,7 @@ var exec = require('child_process').exec;
 var AdmZip = require('adm-zip');
 var path = require('path');
 var colors = require('colors');
-var sh = require('execSync');
+var syncExec = require('sync-exec');
 
 var logLevel = 0;
 var _log = function (str, level) {
@@ -34,8 +34,8 @@ function downloadZip(uri, dest, name, externalFolder) {
 
 	var tempFileName = '.s5grunt/' + name;
 
-	var res = sh.exec('wget -O ' + tempFileName + ' ' + uri);
-	if(res.statusCode !== 0) {
+	var res = syncExec('wget -O ' + tempFileName + ' ' + uri);
+	if(res.stderr.length > 0) {
 		grunt.log.error('Error! Download ' + uri + "Failed", res.stdout);
 	} else {
 		grunt.log.write(' => ' + ('Downloaded to ' + tempFileName).green);
@@ -59,8 +59,8 @@ function downloadScript(uri, dest, name, externalFolder) {
 		fs.mkdirSync(destination);
 	}
 
-	var res = sh.exec('wget -O ' + destination + name + ' ' + uri);
-	if (res.code !== 0) {
+	var res = syncExec('wget -O ' + destination + name + ' ' + uri);
+	if (res.stderr.length > 0) {
 		grunt.log.error('Error! Download ' + uri + "Failed");
 	} else {
 		grunt.log.writeln(' => ' + ('Downloaded to ' + destination + name).green);
@@ -68,13 +68,13 @@ function downloadScript(uri, dest, name, externalFolder) {
 };
 
 function _updateGitRepo(branch, uri, dest, name, externalFolder, silent) {
-	
+
 	var arg = 'git pull origin ' + branch;
 	var tmp = '.s5grunt/' + dest;
 	var destination = path.join(externalFolder, dest) + '/';
 
-	var stdout = sh.exec(arg);
-	var status = stdout.stdout.split('\n')[2];
+	var stdout = syncExec(arg);
+	var status = stdout.stdout;
 
 	if(!silent)
 		grunt.log.writeln(' => ' + (status.indexOf('Already up') > -1 ? status.yellow : status.green));
@@ -105,7 +105,7 @@ function _checkoutGitRepo(branch, uri, dest, name, externalFolder, silent) {
 	arg += toBranch;
 
 	if (toBranch !== branch) {
-		var stdout = sh.exec(arg);
+		var stdout = syncExec(arg).stdout;
 		_updateGitRepo(toBranch, uri, dest, name, externalFolder, silent);
 	} else {
 		_updateGitRepo(branch, uri, dest, name, externalFolder, silent);
@@ -128,7 +128,7 @@ function downloadGitRepo(uri, dest, name, externalFolder) {
 	if (fs.existsSync(destination)) {
 		process.chdir(cwd + '/' + destination);
 		arg += 'rev-parse --abbrev-ref HEAD';
-		var stdout = sh.exec(arg).stdout.trim();
+		var stdout = syncExec(arg).stdout.trim();
 
 		_checkoutGitRepo(stdout, uri, dest, name, externalFolder);
 
@@ -136,7 +136,7 @@ function downloadGitRepo(uri, dest, name, externalFolder) {
 		arg += 'clone ' + theUrl + ' ' + destination;
 		// execute the command
 
-		var output = sh.exec(arg);
+		var output = syncExec(arg);
 		grunt.log.write(' => ' + output.stdout.green);
 		process.chdir(cwd + '/' + destination);
 		_checkoutGitRepo('master', uri, dest, name, externalFolder, 1);
