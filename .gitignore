@@ -5,8 +5,12 @@ tmp
 *.linked.js
 *.built.js
 *.concatenated.js
+.DS_Store
+.idea/
 samples/basic/index.html
 samples/intermediate/index.html
 samples/intermediate/index.built.html
+samples/updater/index.html
+samples/updater/index.built.html
 external
 build
