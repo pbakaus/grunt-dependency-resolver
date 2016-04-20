@@ -36,7 +36,7 @@ function downloadZip(uri, dest, name, externalFolder) {
 
 	var res = syncExec('wget -O ' + tempFileName + ' ' + uri);
 	if(res.stderr.length > 0) {
-		grunt.fail.warn('Error! DownloadZip ' + uri + " Failed: " + res.stderr);
+		grunt.fail.warn('Error! DownloadZip ' + uri + ' Failed: ' + res.stderr);
 	} else {
 		grunt.log.write(' => ' + ('Downloaded to ' + tempFileName).green);
 	}
@@ -61,7 +61,7 @@ function downloadScript(uri, dest, name, externalFolder) {
 
 	var res = syncExec('wget -O ' + destination + name + ' ' + uri);
 	if (res.stderr.length > 0) {
-		grunt.fail.warn('Error! DownloadScript ' + uri + " Failed: " + res.stderr);
+		grunt.fail.warn('Error! DownloadScript ' + uri + ' Failed: ' + res.stderr);
 	} else {
 		grunt.log.writeln(' => ' + ('Downloaded to ' + destination + name).green);
 	}
