@@ -17,8 +17,7 @@ var exec = require('child_process').exec;
 var AdmZip = require('adm-zip');
 var path = require('path');
 var colors = require('colors');
-var sh = require('execSync');
-var httpSync = require('http-sync');
+var syncExec = require('sync-exec');
 
 var logLevel = 0;
 var _log = function (str, level) {
@@ -33,51 +32,21 @@ function getExtension(filename) {
 function downloadZip(uri, dest, name, externalFolder) {
 	grunt.log.write('\t- ' + name.yellow + ' (zip): ' + uri.bold);
 
-	var parsed = urlParse.parse(uri);
-	var protocol = parsed.protocol.substr(0, parsed.protocol.length-1);
-	var req = httpSync.request({
-		method: 'GET',
-		headers: {
-			"User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.97 Safari/537.11",
-			"Referer": "http://www.zynga.com",
-			"Accept-Encoding": "gzip,deflate,sdch",
-			"encoding": "null",
-			"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-			"Cookie": "cookie"
-		},
-
-		protocol: protocol,
-		host: parsed.host,
-		port: parsed.port || (protocol === 'https' ? '443' : '80'), //443 if protocol = https
-		path: parsed.path
-	});
-
-	var response = req.end();
-
-	if(response.statusCode !== 200) {
-		grunt.log.error('Error! Resource came back with the wrong response code: ', response);
-	} else {
-		grunt.log.write(' => ' + ('downloaded ' + response.body.length + ' bytes').green);
-	}
-
 	var tempFileName = '.s5grunt/' + name;
 
-	// exit here if the resource has the same size as the cached one
-	if(fs.existsSync(tempFileName) && fs.statSync(tempFileName).size === response.body.length) {
-		grunt.log.writeln(', resource unchanged'.yellow);
-		return;
+	var res = syncExec('wget -O ' + tempFileName + ' ' + uri);
+	if(res.stderr.length > 0) {
+		grunt.fail.warn('Error! DownloadZip ' + uri + ' Failed: ' + res.stderr);
+	} else {
+		grunt.log.write(' => ' + ('Downloaded to ' + tempFileName).green);
 	}
 
-	// write zip file to tmp location
-	fs.writeFileSync(tempFileName, response.body);
-
 	var zip = new AdmZip(tempFileName),
-	zipEntries = zip.getEntries();
+		zipEntries = zip.getEntries();
 	var zipDest = path.join(externalFolder, dest);
 	zip.extractAllTo(zipDest, true);
 
 	grunt.log.writeln((', extracted to ' + zipDest).green);
-
 };
 
 function downloadScript(uri, dest, name, externalFolder) {
@@ -90,41 +59,22 @@ function downloadScript(uri, dest, name, externalFolder) {
 		fs.mkdirSync(destination);
 	}
 
-	var parsed = urlParse.parse(uri);
-	var protocol = parsed.protocol.substr(0, parsed.protocol.length-1);
-
-	var req = httpSync.request({
-		method: 'GET',
-		protocol: protocol,
-		host: parsed.host,
-		port: parsed.port || (protocol === 'https' ? '443' : '80'), //443 if protocol = https
-		path: parsed.path
-	});
-	var response = req.end();
-
-	if(response.statusCode !== 200) {
-		grunt.log.error('wrong http status code! ', response);
+	var res = syncExec('wget -O ' + destination + name + ' ' + uri);
+	if (res.stderr.length > 0) {
+		grunt.fail.warn('Error! DownloadScript ' + uri + ' Failed: ' + res.stderr);
+	} else {
+		grunt.log.writeln(' => ' + ('Downloaded to ' + destination + name).green);
 	}
-
-	// exit here if the resource has the same size as the cached one
-	if(fs.existsSync(destination + name) && fs.statSync(destination + name).size === response.body.length) {
-		grunt.log.writeln(' => ' + 'no changes detected'.yellow);
-		return;
-	}
-
-	fs.writeFileSync(destination + name, response.body);
-	grunt.log.writeln(' => ' + ('downloaded ' + response.body.length + ' bytes to ' + destination).green);
-
 };
 
 function _updateGitRepo(branch, uri, dest, name, externalFolder, silent) {
-	
+
 	var arg = 'git pull origin ' + branch;
 	var tmp = '.s5grunt/' + dest;
 	var destination = path.join(externalFolder, dest) + '/';
 
-	var stdout = sh.exec(arg);
-	var status = stdout.stdout.split('\n')[2];
+	var stdout = syncExec(arg);
+	var status = stdout.stdout;
 
 	if(!silent)
 		grunt.log.writeln(' => ' + (status.indexOf('Already up') > -1 ? status.yellow : status.green));
@@ -155,7 +105,7 @@ function _checkoutGitRepo(branch, uri, dest, name, externalFolder, silent) {
 	arg += toBranch;
 
 	if (toBranch !== branch) {
-		var stdout = sh.exec(arg);
+		var stdout = syncExec(arg).stdout;
 		_updateGitRepo(toBranch, uri, dest, name, externalFolder, silent);
 	} else {
 		_updateGitRepo(branch, uri, dest, name, externalFolder, silent);
@@ -178,7 +128,7 @@ function downloadGitRepo(uri, dest, name, externalFolder) {
 	if (fs.existsSync(destination)) {
 		process.chdir(cwd + '/' + destination);
 		arg += 'rev-parse --abbrev-ref HEAD';
-		var stdout = sh.exec(arg).stdout.trim();
+		var stdout = syncExec(arg).stdout.trim();
 
 		_checkoutGitRepo(stdout, uri, dest, name, externalFolder);
 
@@ -186,7 +136,7 @@ function downloadGitRepo(uri, dest, name, externalFolder) {
 		arg += 'clone ' + theUrl + ' ' + destination;
 		// execute the command
 
-		var output = sh.exec(arg);
+		var output = syncExec(arg);
 		grunt.log.write(' => ' + output.stdout.green);
 		process.chdir(cwd + '/' + destination);
 		_checkoutGitRepo('master', uri, dest, name, externalFolder, 1);
